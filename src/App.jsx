@@ -294,8 +294,14 @@ function App() {
     const gizmoManager = new GizmoManager(scene)
     gizmoManager.usePointerToAttachGizmos = false
 
+    let pointerDownX = 0
+    let pointerDownY = 0
+
     scene.onPointerObservable.add((eventData) => {
       if (eventData.type === PointerEventTypes.POINTERDOWN) {
+        pointerDownX = scene.pointerX
+        pointerDownY = scene.pointerY
+
         const isHoveringAnyGizmo =
           gizmoManager.gizmos.positionGizmo?.isHovered ||
           gizmoManager.gizmos.rotationGizmo?.isHovered ||
@@ -310,6 +316,18 @@ function App() {
 
       if (eventData.type === PointerEventTypes.POINTERUP) {
         camera.attachControl(canvas, true)
+
+        const dx = scene.pointerX - pointerDownX
+        const dy = scene.pointerY - pointerDownY
+        const isClick = Math.sqrt(dx * dx + dy * dy) < 5
+
+        if (isClick) {
+          const pick = scene.pick(scene.pointerX, scene.pointerY)
+          if (!pick?.hit) {
+            setSelectedMesh(null)
+          }
+        }
+
         return
       }
 
